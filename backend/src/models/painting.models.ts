@@ -50,4 +50,4 @@ const PaintingSchema = new Schema<IPainting>(
   { timestamps: true }
 );
 
-export default mongoose.model<IPainting>("Painting", PaintingSchema);
+export const Painting = mongoose.model<IPainting>("Painting", PaintingSchema);

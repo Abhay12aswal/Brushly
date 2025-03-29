@@ -8,7 +8,11 @@ export interface IComment extends Document {
 
 const CommentSchema = new Schema<IComment>(
   {
-    painting: { type: mongoose.Schema.Types.ObjectId, ref: "Painting", required: true },
+    painting: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Painting",
+      required: true,
+    },
     user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     text: { type: String, required: true },
   },

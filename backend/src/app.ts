@@ -1,9 +1,10 @@
-import express from "express"
+import express, { NextFunction, Request, Response } from "express"
 import { connectDB } from "./utils/features.js"
 import { config } from "dotenv"
 import morgan from "morgan"
 import cookieParser from "cookie-parser"
-
+import { errorHandler } from "./middleware/errorHandler.js"
+import userRoutes from './routes/user.routes.js'
 
 
 const app = express()
@@ -22,8 +23,13 @@ const url = process.env.url || ""
 
 connectDB(url)
 
-app.get("/", (req, res) => {
-  res.send("Hello World")
+
+app.use("/api/v1/user", userRoutes);
+
+
+
+app.use((err: any , req: Request, res: Response , next: NextFunction)=>{
+  errorHandler(err, req, res, next)
 })
 
 app.listen(3000, () => {
