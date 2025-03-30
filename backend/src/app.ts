@@ -5,7 +5,7 @@ import morgan from "morgan"
 import cookieParser from "cookie-parser"
 import { errorHandler } from "./middleware/errorHandler.js"
 import userRoutes from './routes/user.routes.js'
-
+import paintingRoutes from './routes/painting.routes.js'
 
 const app = express()
 
@@ -25,6 +25,7 @@ connectDB(url)
 
 
 app.use("/api/v1/user", userRoutes);
+app.use("/api/v1/painting",paintingRoutes);
 
 
 

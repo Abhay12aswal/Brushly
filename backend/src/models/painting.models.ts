@@ -2,7 +2,7 @@ import mongoose, { Schema, Document } from "mongoose";
 
 export interface IPainting extends Document {
   title: string;
-  imageUrl: string;
+  image: string;
   description?: string;
   tags: string[];
   artist: mongoose.Schema.Types.ObjectId;
@@ -17,7 +17,7 @@ const PaintingSchema = new Schema<IPainting>(
       type: String,
       required: [true, "Please enter a title"],
     },
-    imageUrl: {
+    image: {
       type: String,
       required: [true, "Please upload an image"],
     },

@@ -1,5 +1,3 @@
-// registerUser – Register a new user.
-
 import { NextFunction, Request, Response } from "express";
 import { AsyncHandler } from "../utils/AsyncHandler.js";
 import ApiError from "../utils/ApiError.js";
@@ -7,16 +5,8 @@ import { User } from "../models/user.models.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-
-// loginUser – Authenticate user and return a token.
-
-// getUserProfile – Get user details.
-
-// updateUserProfile – Update user profile (avatar, bio, etc.).
-
-// savePainting – Save a painting to the user's collection.
-
-// unsavePainting – Remove a painting from saved collection.
+import { uploadCloudinary } from "../utils/cloudinary.js";
+import { Console } from "console";
 
 export const register = AsyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -94,7 +84,7 @@ export const login = AsyncHandler(
 
 export const logOut = AsyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
-    console.log("logout")
+    console.log("logout");
     res.clearCookie("token");
     return res
       .status(200)
@@ -136,24 +126,26 @@ export const updateProfile = AsyncHandler(
 
     const { username, email, bio } = req.body;
 
-    if (!username || !email || !bio) {
-      throw new ApiError(400, "please enter all details");
+    const avatarLocalPath = req.file?.path;
+
+    let updateData: Record<string, any> = {};
+
+    if (avatarLocalPath) {
+      const avatar = await uploadCloudinary(avatarLocalPath);
+      if (!avatar || !avatar.url) {
+        throw new ApiError(400, "Error uploading image");
+      }
+      updateData.avatar = avatar.url;
     }
 
-    // profile photo
+    if (username) updateData.username = username;
+    if (email) updateData.email = email;
+    if (bio) updateData.bio = bio;
 
-    const user = await User.findByIdAndUpdate(
-      userId,
-      {
-        username,
-        email,
-        bio,
-      },
-      {
-        new: true,
-        runValidators: true,
-      }
-    ).select("-password");
+    const user = await User.findByIdAndUpdate(userId, updateData, {
+      new: true,
+      runValidators: true,
+    }).select("-password");
 
     if (!user) {
       throw new ApiError(400, "User not found");
@@ -164,3 +156,97 @@ export const updateProfile = AsyncHandler(
       .json(new ApiResponse(200, "User profile updated successfully", user));
   }
 );
+
+// export const followUser = TryCatch(async (req: Request, res: Response) => {
+//   const { userId } = req.params; // ID of the user to follow
+//   const loggedInUserId = req.user?.id; // ID of logged-in user
+
+//   if (userId === loggedInUserId) {
+//     throw new ErrorHandler("You cannot follow yourself", 400);
+//   }
+
+//   const userToFollow = await User.findById(userId);
+//   const loggedInUser = await User.findById(loggedInUserId);
+
+//   if (!userToFollow || !loggedInUser) {
+//     throw new ErrorHandler("User not found", 404);
+//   }
+
+//   if (loggedInUser.following.includes(userId)) {
+//     throw new ErrorHandler("Already following this user", 400);
+//   }
+
+//   // Add userId to following list
+//   loggedInUser.following.push(userToFollow._id);
+//   // Add loggedInUserId to followers list
+//   userToFollow.followers.push(loggedInUser._id);
+
+//   await loggedInUser.save();
+//   await userToFollow.save();
+
+//   res.status(200).json({ message: "User followed successfully" });
+// });
+
+// /**
+//  * Unfollow a user
+//  */
+// export const unfollowUser = TryCatch(async (req: Request, res: Response) => {
+//   const { userId } = req.params;
+//   const loggedInUserId = req.user?.id;
+
+//   const userToUnfollow = await User.findById(userId);
+//   const loggedInUser = await User.findById(loggedInUserId);
+
+//   if (!userToUnfollow || !loggedInUser) {
+//     throw new ErrorHandler("User not found", 404);
+//   }
+
+//   if (!loggedInUser.following.includes(userId)) {
+//     throw new ErrorHandler("Not following this user", 400);
+//   }
+
+//   // Remove userId from following list
+//   loggedInUser.following = loggedInUser.following.filter(
+//     (id) => id.toString() !== userId
+//   );
+
+//   // Remove loggedInUserId from followers list
+//   userToUnfollow.followers = userToUnfollow.followers.filter(
+//     (id) => id.toString() !== loggedInUserId
+//   );
+
+//   await loggedInUser.save();
+//   await userToUnfollow.save();
+
+//   res.status(200).json({ message: "User unfollowed successfully" });
+// });
+
+// /**
+//  * Get a user's followers
+//  */
+// export const getFollowers = TryCatch(async (req: Request, res: Response) => {
+//   const { userId } = req.params;
+
+//   const user = await User.findById(userId).populate("followers", "username");
+
+//   if (!user) {
+//     throw new ErrorHandler("User not found", 404);
+//   }
+
+//   res.status(200).json({ followers: user.followers });
+// });
+
+// /**
+//  * Get a user's following
+//  */
+// export const getFollowing = TryCatch(async (req: Request, res: Response) => {
+//   const { userId } = req.params;
+
+//   const user = await User.findById(userId).populate("following", "username");
+
+//   if (!user) {
+//     throw new ErrorHandler("User not found", 404);
+//   }
+
+//   res.status(200).json({ following: user.following });
+// });
