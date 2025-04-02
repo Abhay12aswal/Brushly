@@ -6,6 +6,8 @@ import cookieParser from "cookie-parser"
 import { errorHandler } from "./middleware/errorHandler.js"
 import userRoutes from './routes/user.routes.js'
 import paintingRoutes from './routes/painting.routes.js'
+import commentRoutes from './routes/comment.routes.js'
+import boardRoutes from './routes/board.routes.js'
 
 const app = express()
 
@@ -26,6 +28,8 @@ connectDB(url)
 
 app.use("/api/v1/user", userRoutes);
 app.use("/api/v1/painting",paintingRoutes);
+app.use("/api/v1/comment", commentRoutes)
+app.use("/api/v1/board", boardRoutes)
 
 
 

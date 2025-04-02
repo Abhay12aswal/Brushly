@@ -104,7 +104,10 @@ export const getUserProfile = AsyncHandler(
       throw new ApiError(400, "User not found");
     }
 
-    const user = await User.findById(userId).select("-password");
+    const user = await User.findById(userId)
+      .select("-password")
+      .populate("savedPaintings", "title")
+      .populate("boards","name");
 
     if (!user) {
       throw new ApiError(400, "User not found");
