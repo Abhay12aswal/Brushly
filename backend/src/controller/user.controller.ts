@@ -6,7 +6,6 @@ import ApiResponse from "../utils/ApiResponse.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { uploadCloudinary } from "../utils/cloudinary.js";
-import { Console } from "console";
 
 export const register = AsyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -22,6 +21,19 @@ export const register = AsyncHandler(
       throw new ApiError(400, "User already existe");
     }
 
+    let avatarLocalPath = req.file?.path;
+    let avatar
+
+ 
+    if (avatarLocalPath) {
+      const uploadedAvatar = await uploadCloudinary(avatarLocalPath);
+      if (!uploadedAvatar || !uploadedAvatar.secure_url) {
+        throw new ApiError(400, "Error uploading avatar");
+      }
+    
+      avatar = uploadedAvatar.secure_url; 
+    }
+
     //profile photo
 
     //create user
@@ -29,6 +41,7 @@ export const register = AsyncHandler(
       username,
       email,
       password,
+      avatar
     });
 
     return res
@@ -78,7 +91,7 @@ export const login = AsyncHandler(
         sameSite: "strict",
         maxAge: 24 * 60 * 60 * 1000,
       })
-      .json(new ApiResponse(200, "User logged in successfully", null));
+      .json(new ApiResponse(200, "User logged in successfully", user));
   }
 );
 

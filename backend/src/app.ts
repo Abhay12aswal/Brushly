@@ -8,6 +8,7 @@ import userRoutes from './routes/user.routes.js'
 import paintingRoutes from './routes/painting.routes.js'
 import commentRoutes from './routes/comment.routes.js'
 import boardRoutes from './routes/board.routes.js'
+import cors from "cors"
 
 const app = express()
 
@@ -15,6 +16,12 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(express.static("public"))
 app.use(morgan("dev"))
+
+app.use(cors({
+  origin: "http://localhost:5173/",
+  methods: ["GET","POST","PUT","DELETE","PATCH"],
+  credentials: true
+}))
 
 
 config({
